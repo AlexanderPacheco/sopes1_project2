@@ -57,7 +57,11 @@ sudo usermod -aG docker developer
 ## Install Linkerd
 ```
 curl -fsL https://run.linkerd.io/install | sh
-nano ~/.bashrc <- export PATH=$PATH:/home/YOUR_USER/.linkerd2/bin
+
+**Agregar el usuario whoami en el export
+nano ~/.bashrc <- export PATH=$PATH:/home/YOUR_USER/.linkerd2/bin 
+o bien 
+nano ~/.bashrc <- export PATH=$PATH:$HOME/.linkerd2/bin
 
 linkerd install | kubectl apply -f -
 linkerd check

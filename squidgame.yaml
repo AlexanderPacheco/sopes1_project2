@@ -31,7 +31,7 @@ spec:
       containers:
       - image: redis
         name: database
-      - image: alexixva/python-flask-distroless #czdev/python-flask-distroless
+      - image: alexixva/python-flask-distroless 
         name: python-flask-distroless
         resources: {}
 status: {}
