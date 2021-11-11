@@ -11,27 +11,119 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    app: myapp
-  name: myapp
+    app: kafka
+  name: kafka
   namespace: squidgame
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: myapp
+      app: kafka
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: myapp
+        app: kafka
       annotations:
         linkerd.io/inject: enabled
     spec:
       containers:
-      - image: redis
-        name: database
-      - image: alexixva/python-flask-distroless 
+      - image: alexixva/python-2
+        name: python-2
+        resources: {}
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: kafka
+  name: kafka
+  namespace: squidgame
+spec:
+  ports:
+  - port: 5000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: kafka
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: rabbit
+  name: rabbit
+  namespace: squidgame
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: rabbit
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: rabbit
+      annotations:
+        linkerd.io/inject: enabled
+    spec:
+      containers:
+      - image: alexixva/python-3
+        name: python-3
+        resources: {}
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: rabbit
+  name: rabbit
+  namespace: squidgame
+spec:
+  ports:
+  - port: 5000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: rabbit
+  type: ClusterIP
+status:
+  loadBalancer: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: pubsub
+  name: pubsub
+  namespace: squidgame
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pubsub
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: pubsub
+      annotations:
+        linkerd.io/inject: enabled
+    spec:
+      containers:
+      - image: alexixva/python-flask-distroless
         name: python-flask-distroless
         resources: {}
 status: {}
@@ -41,8 +133,8 @@ kind: Service
 metadata:
   creationTimestamp: null
   labels:
-    app: myapp
-  name: myapp
+    app: pubsub
+  name: pubsub
   namespace: squidgame
 spec:
   ports:
@@ -50,7 +142,7 @@ spec:
     protocol: TCP
     targetPort: 5000
   selector:
-    app: myapp
+    app: pubsub
   type: ClusterIP
 status:
   loadBalancer: {}
@@ -69,13 +161,33 @@ spec:
   - host: 34.134.109.145.nip.io
     http: 
       paths: 
-      - path: /myapp
+      - path: /kafka
         pathType: Prefix 
         backend: 
           service: 
-            name: myapp 
+            name: kafka 
             port: 
               number: 5000 
+  - host: 34.134.109.145.nip.io
+    http: 
+      paths: 
+      - path: /rabbit
+        pathType: Prefix 
+        backend: 
+          service: 
+            name: rabbit 
+            port: 
+              number: 5000
+  - host: 34.134.109.145.nip.io
+    http: 
+      paths: 
+      - path: /pubsub
+        pathType: Prefix 
+        backend: 
+          service: 
+            name: pubsub 
+            port: 
+              number: 5000
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -143,9 +255,13 @@ metadata:
   name: error-split
   namespace: squidgame
 spec:
-  service: myapp
+  #service: pubsub
   backends:
-  - service: myapp
-    weight: 700m
-  - service: error-injector
+  - service: kafka
     weight: 300m
+  - service: rabbit
+    weight: 300m
+  - service: pubsub
+    weight: 300m
+  - service: error-injector
+    weight: 100m
