@@ -33,6 +33,11 @@ kubectl version --client
 curl -LO https://dl.k8s.io/release/v1.20.0/bin/linux/amd64/kubectl
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 ```
+> *Nota* Las versiones de kubectl server al client deben ser al menos una version de diferencia, sino no funciona chaos-mesh. El siguiente comando es para ver las versiones
+
+```
+kubectl version
+```
 
 ## Configure kubectl to connect to your cluster
 ```
@@ -90,10 +95,21 @@ Check if you can find 2 pods for the NGINX ingress-controller
 kubectl get pods -n nginx-ingress
 ```
 
-## Get Load Balancer IP
+### Get Load Balancer IP
 ```
 kubectl get svc -n nginx-ingress
 kubectl get all -n squidgame
+kubectl describe ingresses -n squidgame
+```
+
+### Get info squidgame
+```
+kubectl get all -n squidgame
+```
+
+### Get routes for squidgame
+```
+kubectl describe ingresses -n squidgame
 ```
 
 
