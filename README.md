@@ -28,6 +28,12 @@ sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 kubectl version --client
 ```
 
+## Install a kubectl specific version
+```
+curl -LO https://dl.k8s.io/release/v1.20.0/bin/linux/amd64/kubectl
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+```
+
 ## Configure kubectl to connect to your cluster
 ```
 gcloud container clusters get-credentials k8s-demo --zone us-central1-c --project sopes1-323620
@@ -59,9 +65,10 @@ sudo usermod -aG docker developer
 curl -fsL https://run.linkerd.io/install | sh
 
 **Agregar el usuario whoami en el export
-nano ~/.bashrc <- export PATH=$PATH:/home/YOUR_USER/.linkerd2/bin 
+nano ~/.bashrc <- export PATH=$PATH:/home/YOUR_USER/.linkerd2/bin
 o bien 
 nano ~/.bashrc <- export PATH=$PATH:$HOME/.linkerd2/bin
+**Si no reconoce el comando linkerd, hay que reiniciar porque tendria que jalar :V
 
 linkerd install | kubectl apply -f -
 linkerd check
@@ -72,12 +79,6 @@ linkerd check
 ## Open Linkerd dashboard
 ```
 linkerd viz dashboard
-```
-
-## Install a kubectl specific version
-```
-curl -LO https://dl.k8s.io/release/v1.20.0/bin/linux/amd64/kubectl
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 ```
 
 ## Inject NGINX ingress-controller
@@ -92,6 +93,7 @@ kubectl get pods -n nginx-ingress
 ## Get Load Balancer IP
 ```
 kubectl get svc -n nginx-ingress
+kubectl get all -n squidgame
 ```
 
 
