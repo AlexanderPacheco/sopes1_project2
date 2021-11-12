@@ -11,20 +11,20 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    app: kafka
-  name: kafka
+    app: myapp
+  name: myapp
   namespace: squidgame
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: kafka
+      app: myapp
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: kafka
+        app: myapp
       annotations:
         linkerd.io/inject: enabled
     spec:
@@ -39,8 +39,8 @@ kind: Service
 metadata:
   creationTimestamp: null
   labels:
-    app: kafka
-  name: kafka
+    app: myapp
+  name: myapp
   namespace: squidgame
 spec:
   ports:
@@ -48,7 +48,7 @@ spec:
     protocol: TCP
     targetPort: 5000
   selector:
-    app: kafka
+    app: myapp
   type: ClusterIP
 status:
   loadBalancer: {}
@@ -161,11 +161,11 @@ spec:
   - host: 34.134.109.145.nip.io
     http: 
       paths: 
-      - path: /kafka
+      - path: /myapp
         pathType: Prefix 
         backend: 
           service: 
-            name: kafka 
+            name: myapp 
             port: 
               number: 5000 
   - host: 34.134.109.145.nip.io
@@ -255,9 +255,9 @@ metadata:
   name: error-split
   namespace: squidgame
 spec:
-  #service: pubsub
+  service: myapp
   backends:
-  - service: kafka
+  - service: myapp
     weight: 300m
   - service: rabbit
     weight: 300m
