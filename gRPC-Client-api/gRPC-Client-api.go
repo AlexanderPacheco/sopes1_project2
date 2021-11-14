@@ -10,7 +10,7 @@ import (
 	"os"
 	"github.com/Pallinder/go-randomdata"
 	"google.golang.org/grpc"
-	pb "https://github.com/AlexanderPacheco/sopes1_project2/gRPC-Client-api/proto"
+	pb "github.com/AlexanderPacheco/sopes1_project2/gRPC-Client-api/proto"
 )
 
 var nombre_api = "default"
