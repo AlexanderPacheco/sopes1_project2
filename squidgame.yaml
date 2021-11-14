@@ -109,7 +109,7 @@ metadata:
   name: pubsub
   namespace: squidgame
 spec:
-  replicas: 2
+  replicas: 3 # Segun replicas que pide el enunciado
   selector:
     matchLabels:
       app: pubsub
