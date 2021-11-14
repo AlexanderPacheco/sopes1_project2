@@ -24,6 +24,7 @@ func operacionesAritmeticas(w http.ResponseWriter, r *http.Request) {
 	num1 := mux.Vars(r)["val1"] //Obtengo el valor 1
 	num2 := mux.Vars(r)["val2"] //Obtengo el valor 2
 	host:= os.Getenv("HOST")
+	
 	/********************************** gRPC llamada al servidor ********************************/
 	conn, err := grpc.Dial(host+":50051", grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
