@@ -39,6 +39,8 @@ func main() {
 				game, err := generateGame(pars)
 				if err == nil {
 					runGame(game)
+				} else {
+					fmt.Println(err)
 				}
 			}
 			fmt.Println("\nPress ctrl+c to exit")
