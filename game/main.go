@@ -4,8 +4,11 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
 	"strconv"
+	"sync"
+	"time"
 
 	//"reflect"
 	//"encoding/json"
@@ -39,6 +42,8 @@ func main() {
 				game, err := generateGame(pars)
 				if err == nil {
 					runGame(game)
+					//fmt.Println(game)
+					//fmt.Println(rand.Intn(game.Players) + 1)
 				} else {
 					fmt.Println(err)
 				}
@@ -50,11 +55,65 @@ func main() {
 	}
 }
 
-// Ejecuta el juego
+// Ejecuta el juego, envia los datos en base a la entrada, o sea su concurrencia, numero de jugadores etc
 func runGame(game Juego) {
 
 	fmt.Println("Running game...")
 	fmt.Println(game)
+
+	numeroJugadores := game.Players
+	rungames := game.Rungames
+	concurrencia := game.Concurrence
+	array_juegos := game.Gamename
+	segundos := game.Timeout * 60 //Convierto los minutos en segundos
+
+	// Variable del Wait-Group
+	var wg sync.WaitGroup
+
+	// Determino cuantos juegos tendra que ejecutar cada Go-Routine
+	partes := rungames / concurrencia
+
+	// Comienzo a tomar el tiempo desde este punto
+	tiempo := time.Now()
+
+	for i := 0; i < concurrencia; i++ {
+		//	#Agrego una nueva rutina
+		wg.Add(1)
+
+		//	#Asigno desde donde hasta donde debe correrse una corrida, en base al numero de juegos
+		inicio := int(partes * i)
+		fin := int(inicio + partes)
+
+		go func(start int, end int) {
+			defer wg.Done()
+
+			for iteracion := start; (iteracion < end) && (end <= rungames); iteracion++ {
+				secs := int(time.Since(tiempo) / time.Second)
+
+				if secs <= segundos {
+					index_game := rand.Intn((len(array_juegos)))
+					winner := rand.Intn(numeroJugadores) + 1
+					game := strings.Split(array_juegos[index_game], ";")
+					url_gen := "https://game/" + game[0] + "/gamename/" + game[1] + "/players/" + strconv.Itoa(winner)
+					fmt.Println(url_gen)
+
+				} else {
+					break
+				}
+
+			}
+
+		}(inicio, fin)
+	}
+
+	wg.Wait()
+	fmt.Println("The Game is Over!")
+}
+
+func generarUrl(arr []string) string {
+	res := ""
+
+	return res
 }
 
 // Lee una linea en la consola
@@ -117,12 +176,14 @@ func generateGame(arr []string) (Juego, error) {
 			}
 		} else if strings.Contains(element, "timeout ") {
 			srr := extractSingleParameter(element, "timeout ")
-			re := regexp.MustCompile("[0-9]+")
+			re := regexp.MustCompile("[0-9]+(.[0-9]+)?")
 			result := re.FindStringSubmatch(srr)
 			if result != nil {
 				tmout, err := strconv.Atoi(result[0])
 				if err == nil {
 					game.Timeout = tmout
+				} else {
+					fmt.Println(err)
 				}
 			}
 		}
@@ -167,7 +228,7 @@ func extractSingleParameter(str string, par string) string {
 }
 
 /*
-rungame --gamename "1;Random | 2;Ruleta | 5;Last" --players 30 --rungames 30000 --concurrence 10 --timeout 3m
+rungame --gamename "1;Random | 2;Ruleta | 5;Last" --players 10 --rungames 300 --concurrence 10 --timeout 1m
 
 --gamename "1;Random | 2;Ruleta | 5;Last"
 */
