@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/racarlosdavid/demo-gRPC-kubernetes/gRPC-Server/proto";
+option go_package = "github.com/AlexanderPacheco/sopes1_project2/gRPC-Server/proto";
 
 package proto;
 
