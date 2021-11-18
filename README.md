@@ -11,7 +11,7 @@ gcloud init
 
 ## Create cluster
 ```
-gcloud container clusters create k8s-demo --num-nodes=1 --tags=allin,allout --machine-type=n1-standard-2 --no-enable-network-policy
+gcloud container clusters create kuberneris --num-nodes=2 --tags=allin,allout --machine-type=n1-standard-2 --no-enable-network-policy --zone us-central1-a
 ```
 
 ## Installing helm

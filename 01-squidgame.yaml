@@ -11,20 +11,20 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    app: myapp
-  name: myapp
+    app: myapp #kafka
+  name: myapp #kafka
   namespace: squidgame
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: myapp
+      app: myapp #kafka
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: myapp
+        app: myapp #kafka
       annotations:
         linkerd.io/inject: enabled
     spec:
@@ -64,8 +64,8 @@ kind: Service
 metadata:
   creationTimestamp: null
   labels:
-    app: myapp
-  name: myapp
+    app: myapp #kafka
+  name: myapp #kafka
   namespace: squidgame
 spec:
   ports:
@@ -73,7 +73,7 @@ spec:
     protocol: TCP
     targetPort: 2000
   selector:
-    app: myapp
+    app: myapp #kafka
   type: ClusterIP
 status:
   loadBalancer: {}
@@ -156,7 +156,7 @@ metadata:
   name: pubsub
   namespace: squidgame
 spec:
-  replicas: 3 # Segun replicas que pide el enunciado
+  replicas: 2 # Segun replicas que pide el enunciado
   selector:
     matchLabels:
       app: pubsub
@@ -169,31 +169,26 @@ spec:
       annotations:
         linkerd.io/inject: enabled
     spec:
-      hostname: grpc-pod-host
+      hostname: grpc-host-pubsub
       containers:
-        - name: grpc-client-api
-          image: alexixva/grpc_client_api
+        - name: grpc-client-pubsub
+          image: alexixva/grpc_client_pubsub
           env:
           - name: HOST
-            value: grpc-pod-host
+            value: grpc-host-pubsub
           ports:
             - containerPort: 2000
           resources: {}
-        - name: grpc-server
-          image: alexixva/grpc_server
+        - name: grpc-server-pubsub
+          image: alexixva/grpc_server_pubsub
+          env:
+          - name: HOST
+            value: grpc-host-pubsub
           ports:
             - containerPort: 50051
           resources: {}
-        - name: worker-rabbitmq
-          image: alexixva/worker_rabbitmq
-          env:
-          - name: HOST
-            value: grpc-pod-host
-          resources: {}
-        - name: rabbitmq
-          image: rabbitmq:3.9-management
-          ports:
-            - containerPort: 5672
+        - name: pubsub-suscriber
+          image: alexixva/pubsub_suscriber
           resources: {}
 status: {}
 ---
@@ -230,11 +225,11 @@ spec:
   - host: 34.134.109.145.nip.io
     http: #Se agregan los servicios que tendra este host
       paths: 
-      - path: / #/myapp
+      - path: / #/myapp #kafka
         pathType: Prefix 
         backend: 
           service: 
-            name: myapp 
+            name: myapp  #kafka
             port: 
               number: 2000 
         path: / #/rabbit
@@ -318,9 +313,9 @@ metadata:
   name: error-split
   namespace: squidgame
 spec:
-  service: myapp
+  service: myapp #kafka
   backends:
-  - service: myapp
+  - service: myapp #kafka
     weight: 300m
   - service: rabbit
     weight: 300m
