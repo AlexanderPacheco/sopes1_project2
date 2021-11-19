@@ -1,0 +1,23 @@
+kind: Schedule
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: experiment3
+  namespace: chaos-testing
+spec:
+  action: partition
+  mode: one
+  selector:
+    labelSelectors:
+      'app.kubernetes.io/component': 'tikv'
+  direction: to
+  target:
+    selector:
+      namespaces:
+        - squidgame
+      labelSelectors:
+        'app.kubernetes.io/component': 'tikv'
+    mode: one
+  duration: '10s'
+  scheduler:
+    cron: '@every 15s'
