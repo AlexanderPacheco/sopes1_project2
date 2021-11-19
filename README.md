@@ -11,7 +11,7 @@ gcloud init
 
 ## Create cluster
 ```
-gcloud container clusters create k8s-demo --num-nodes=1 --tags=allin,allout --machine-type=n1-standard-2 --no-enable-network-policy
+gcloud container clusters create kuberneris --num-nodes=2 --tags=allin,allout --machine-type=n1-standard-2 --no-enable-network-policy --zone us-central1-a
 ```
 
 ## Installing helm
@@ -26,6 +26,17 @@ chmod 700 get_helm.sh
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 kubectl version --client
+```
+
+## Install a kubectl specific version
+```
+curl -LO https://dl.k8s.io/release/v1.20.0/bin/linux/amd64/kubectl
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+```
+> *Nota* Las versiones de kubectl server al client deben ser al menos una version de diferencia, sino no funciona chaos-mesh. El siguiente comando es para ver las versiones
+
+```
+kubectl version
 ```
 
 ## Configure kubectl to connect to your cluster
@@ -54,10 +65,41 @@ sudo usermod -aG docker developer
 /bin/bash build.sh 
 ```
 
+### RABBITMQ
+```
+docker build . -t alexixva/grpc_client_api
+docker build . -t alexixva/grpc_server
+docker build . -t alexixva/worker_rabbitmq
+docker run -it -p 2000:2000 -e HOST=192.168.1.19 --name grpc_client_api alexixva/grpc_client_api
+docker run -it -p 50051:50051 -e HOST=192.168.1.19 --name grpc_server_ alexixva/grpc_server
+docker run -it -e HOST=192.168.1.19 --name worker_rabbitmq alexixva/worker_rabbitmq
+docker push alexixva/grpc_server
+docker push alexixva/grpc_client_api
+docker push alexixva/worker_rabbitmq
+```
+
+### PUBSUB
+```
+docker build . -t alexixva/pubsub_suscriber
+docker build . -t alexixva/grpc_server_pubsub
+docker build . -t alexixva/grpc_client_pubsub
+docker run -it -p 2000:2000 -e HOST=192.168.1.19 --name grpc_client_pubsub alexixva/grpc_client_pubsub
+docker run -it -p 50051:50051 -e HOST=192.168.1.19 --name grpc_server_pubsub alexixva/grpc_server_pubsub
+docker run -it --name pubsub_suscriber alexixva/pubsub_suscriber
+docker push alexixva/grpc_client_pubsub
+docker push alexixva/grpc_server_pubsub
+docker push alexixva/pubsub_suscriber
+```
+
 ## Install Linkerd
 ```
 curl -fsL https://run.linkerd.io/install | sh
+
+**Agregar el usuario whoami en el export
 nano ~/.bashrc <- export PATH=$PATH:/home/YOUR_USER/.linkerd2/bin
+o bien 
+nano ~/.bashrc <- export PATH=$PATH:$HOME/.linkerd2/bin
+**Si no reconoce el comando linkerd, hay que reiniciar porque tendria que jalar :V
 
 linkerd install | kubectl apply -f -
 linkerd check
@@ -70,12 +112,6 @@ linkerd check
 linkerd viz dashboard
 ```
 
-## Install a kubectl specific version
-```
-curl -LO https://dl.k8s.io/release/v1.20.0/bin/linux/amd64/kubectl
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-```
-
 ## Inject NGINX ingress-controller
 ```
 kubectl get deployment nginx-ingress-ingress-nginx-controller -n nginx-ingress  -o yaml | linkerd inject - | kubectl apply -f -
@@ -85,9 +121,19 @@ Check if you can find 2 pods for the NGINX ingress-controller
 kubectl get pods -n nginx-ingress
 ```
 
-## Get Load Balancer IP
+### Get Load Balancer IP
 ```
 kubectl get svc -n nginx-ingress
+```
+
+### Get info squidgame
+```
+kubectl get all -n squidgame
+```
+
+### Get routes for squidgame
+```
+kubectl describe ingresses -n squidgame
 ```
 
 
@@ -117,4 +163,80 @@ kubectl apply -f chaos_mesh/pod-experiments.yaml
 ```
 ```
 kubectl get pods -n squidgame -w
+```
+## Install and Configure gRPC on Kubernetes
+
+#### Iniciamos el proyecto
+
+> Video: https://www.youtube.com/watch?v=_eTR0if-KYc&ab_channel=CarlosDavid
+
+```
+mkdir gRPC-Client-api
+cd gRPC-Client-api
+go mod init github.com/alexixva/demo-gRPC-kubernetes/gRPC-Client-api
+mkdir gRPC-Server
+cd gRPC-Server
+go mod init github.com/alexixva/demo-gRPC-kubernetes/gRPC-Server
+```
+
+#### Instalar dependencias gRPC
+```
+go get -u google.golang.org/grpc
+go get github.com/golang/protobuf/proto@v1.5.2
+go get google.golang.org/protobuf/reflect/protoreflect@v1.27.1
+go get google.golang.org/protobuf/runtime/protoimpl@v1.27.1
+```
+
+#### Instalar dependencias para compilar el .proto
+```
+go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.26
+go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.1
+export PATH="$PATH:$(go env GOPATH)/bin"
+protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative proto/demo.proto
+```
+
+#### API - Instalamos gorilla mux para el server y go-randomdata para nombres random
+```
+go get -u github.com/gorilla/mux
+go get github.com/Pallinder/go-randomdata
+```
+
+#### Creacion de las imagenes de los contenedores
+```
+docker build -t "alexixva/grpc_client_api" .
+docker build -t "alexixva/grpc_server" .
+```
+
+#### Prueba de los contenedores
+```
+docker run -it -d -p 2000:2000 -e HOST=192.168.1.4 --name grpc_client_api_ alexixva/grpc_client_api
+docker run -it -d -p 50051:50051 --name grpc_server_ alexixva/grpc_server
+```
+
+#### Subir contenedores a dockerhub
+```
+docker login
+docker push alexixva/grpc_client_api
+docker push alexixva/grpc_server
+```
+
+#### Kubernetes
+```
+kubectl apply -f deployment-grpc-kubernetes.yml
+kubectl apply -f ingress-grpc-kubernetes.yml
+kubectl get services
+kubectl get pods
+kubectl get pods -o wide
+kubectl describe pod <NOMBRE DEL POD>
+```
+
+### Instalacion RabbitMQ
+```
+docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.9-management
+```
+
+> En mi api de go instalar
+
+```
+go get github.com/rabbitmq/amqp091-go
 ```
