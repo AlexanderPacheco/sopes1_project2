@@ -2,9 +2,12 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
+	"net/http"
 	"os"
 	"strconv"
 	"sync"
@@ -32,7 +35,7 @@ func main() {
 	for {
 		var entry string
 		var ok bool
-		// PARA SALIR DEL JUEGO HAY QUE SALIR HACER LA COMBINACION DE TECLAS CTRL+C
+		// PARA SALIR DEL JUEGO HAY QUE HACER LA COMBINACION DE TECLAS CTRL+C
 		fmt.Printf("Entry: ")
 		if entry, ok = readline(fi); ok {
 
@@ -91,12 +94,28 @@ func runGame(game Juego) {
 				secs := int(time.Since(tiempo) / time.Second)
 
 				if secs <= segundos {
+
 					index_game := rand.Intn((len(array_juegos)))
 					winner := rand.Intn(numeroJugadores) + 1
 					game := strings.Split(array_juegos[index_game], ";")
-					url_gen := "https://game/" + game[0] + "/gamename/" + game[1] + "/players/" + strconv.Itoa(winner)
-					fmt.Println(url_gen)
+					url := "http://34.68.185.157.nip.io/game/" + game[0] + "/gamename/" + game[1] + "/players/" + strconv.Itoa(winner)
 
+					var jsonStr = []byte(`{}`)
+					req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonStr))
+					req.Header.Set("X-Custom-Header", "myvalue")
+					req.Header.Set("Content-Type", "application/json")
+
+					client := &http.Client{}
+					resp, err := client.Do(req)
+					if err != nil {
+						panic(err)
+					}
+					defer resp.Body.Close()
+
+					fmt.Println("response Status:", resp.Status)
+					fmt.Println("response Headers:", resp.Header)
+					body, _ := ioutil.ReadAll(resp.Body)
+					fmt.Println("response Body:", string(body))
 				} else {
 					break
 				}
