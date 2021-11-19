@@ -11,20 +11,20 @@ kind: Deployment
 metadata:
   creationTimestamp: null
   labels:
-    app: myapp #kafka
-  name: myapp #kafka
+    app: myapp
+  name: myapp
   namespace: squidgame
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: myapp #kafka
+      app: myapp
   strategy: {}
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: myapp #kafka
+        app: myapp
       annotations:
         linkerd.io/inject: enabled
     spec:
@@ -40,22 +40,8 @@ spec:
           resources: {}
         - name: grpc-server
           image: alexixva/grpc_server
-          env:
-          - name: HOST
-            value: grpc-pod-host
           ports:
             - containerPort: 50051
-          resources: {}
-        - name: worker-rabbitmq
-          image: alexixva/worker_rabbitmq
-          env:
-          - name: HOST
-            value: grpc-pod-host
-          resources: {}
-        - name: rabbitmq
-          image: rabbitmq:3.9-management
-          ports:
-            - containerPort: 5672
           resources: {}
 status: {}
 ---
@@ -64,8 +50,8 @@ kind: Service
 metadata:
   creationTimestamp: null
   labels:
-    app: myapp #kafka
-  name: myapp #kafka
+    app: myapp
+  name: myapp
   namespace: squidgame
 spec:
   ports:
@@ -73,7 +59,7 @@ spec:
     protocol: TCP
     targetPort: 2000
   selector:
-    app: myapp #kafka
+    app: myapp
   type: ClusterIP
 status:
   loadBalancer: {}
@@ -115,17 +101,6 @@ spec:
           ports:
             - containerPort: 50051
           resources: {}
-        - name: worker-rabbitmq
-          image: alexixva/worker_rabbitmq
-          env:
-          - name: HOST
-            value: grpc-pod-host
-          resources: {}
-        - name: rabbitmq
-          image: rabbitmq:3.9-management
-          ports:
-            - containerPort: 5672
-          resources: {}
 status: {}
 ---
 apiVersion: v1
@@ -156,7 +131,7 @@ metadata:
   name: pubsub
   namespace: squidgame
 spec:
-  replicas: 2 # Segun replicas que pide el enunciado
+  replicas: 3 # Segun replicas que pide el enunciado
   selector:
     matchLabels:
       app: pubsub
@@ -169,26 +144,20 @@ spec:
       annotations:
         linkerd.io/inject: enabled
     spec:
-      hostname: grpc-host-pubsub
+      hostname: grpc-pod-host
       containers:
-        - name: grpc-client-pubsub
-          image: alexixva/grpc_client_pubsub
+        - name: grpc-client-api
+          image: alexixva/grpc_client_api
           env:
           - name: HOST
-            value: grpc-host-pubsub
+            value: grpc-pod-host
           ports:
             - containerPort: 2000
           resources: {}
-        - name: grpc-server-pubsub
-          image: alexixva/grpc_server_pubsub
-          env:
-          - name: HOST
-            value: grpc-host-pubsub
+        - name: grpc-server
+          image: alexixva/grpc_server
           ports:
             - containerPort: 50051
-          resources: {}
-        - name: pubsub-suscriber
-          image: alexixva/pubsub_suscriber
           resources: {}
 status: {}
 ---
@@ -222,14 +191,14 @@ metadata:
   namespace: squidgame
 spec: 
   rules: 
-  - host: 34.134.109.145.nip.io
+  - host: 34.68.185.157.nip.io
     http: #Se agregan los servicios que tendra este host
       paths: 
-      - path: / #/myapp #kafka
+      - path: / #/myapp
         pathType: Prefix 
         backend: 
           service: 
-            name: myapp  #kafka
+            name: myapp 
             port: 
               number: 2000 
         path: / #/rabbit
@@ -313,9 +282,9 @@ metadata:
   name: error-split
   namespace: squidgame
 spec:
-  service: myapp #kafka
+  service: myapp
   backends:
-  - service: myapp #kafka
+  - service: myapp
     weight: 300m
   - service: rabbit
     weight: 300m
