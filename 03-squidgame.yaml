@@ -316,10 +316,10 @@ spec:
   service: myapp #kafka
   backends:
   - service: myapp #kafka
-    weight: 000m
+    weight: 500m
   - service: rabbit
     weight: 500m
   - service: pubsub
-    weight: 500m
+    weight: 000m
   - service: error-injector
     weight: 000m
