@@ -32,7 +32,7 @@ func dbConn() (db *sql.DB) {
     dbUser := "admin"
     dbPass := "Ayd2_2021"
     dbName := "ayd2phase1"
-	dbConnection := "database-ayd2.caxlo7fjv8ng.us-east-2.rds.amazonaws.com"
+	dbConnection := "Connection_string_here"
 	dbPort := "3306"
 
 	db, err := sql.Open(dbDriver, dbUser+":"+dbPass+"@tcp("+dbConnection+":"+dbPort+")/"+dbName)

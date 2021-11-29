@@ -1,6 +1,6 @@
 
 let db_credentials = {
-    host: 'database-ayd2.caxlo7fjv8ng.us-east-2.rds.amazonaws.com',
+    host: 'connection_string_here',
     port: 3306,
     user: 'admin',
     password:'Ayd2_2021',
