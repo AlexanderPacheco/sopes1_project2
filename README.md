@@ -2,11 +2,11 @@
 
 > Kubernetes modelo
 
-![](https://github.com/AlexanderPacheco/sopes1_project2/blob/master/myapp/res/modelo.png)
+![](https://github.com/AlexanderPacheco/sopes1_project2/blob/master/res/modelo.png)
 
 > Replicas
 
-![](https://github.com/AlexanderPacheco/sopes1_project2/blob/master/myapp/res/replicas.png)
+![](https://github.com/AlexanderPacheco/sopes1_project2/blob/master/res/replicas.png)
 
 ## Installing gcloud command
 ```
