@@ -1,5 +1,13 @@
 # USAC SQUID GAME
 
+> Kubernetes modelo
+
+![](https://github.com/AlexanderPacheco/sopes1_project2/blob/master/myapp/res/modelo.png)
+
+> Replicas
+
+![](https://github.com/AlexanderPacheco/sopes1_project2/blob/master/myapp/res/replicas.png)
+
 ## Installing gcloud command
 ```
 echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
